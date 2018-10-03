@@ -72,10 +72,10 @@ setopt auto_cd
 
 ## フローコントロールを無効にする
 setopt no_flow_control
- 
+
 # '#' 以降をコメントとして扱う
 setopt interactive_comments
-  
+
 
 # ヒストリの設定 {
 
@@ -109,6 +109,7 @@ setopt extended_glob
 # brew
 export PATH="/usr/bin:/usr/sbin:/bin:~/sbin"
 export PATH="/usr/local/bin:$PATH"
+export PATH=$PATH:/usr/local/texlive/2017/bin/x86_64-darwin/
 
 # 重複する要素を自動的に削除
 typeset -U path cdpath fpath manpath
@@ -117,44 +118,53 @@ typeset -U path cdpath fpath manpath
 # プロンプト
 # -------------------------------------
 
-autoload -U promptinit; promptinit
-autoload -Uz colors; colors
+#autoload -U promptinit; promptinit
+#autoload -Uz colors; colors
+#autoload -Uz vcs_info
+#autoload -Uz is-at-least
+#
+## begin VCS
+#zstyle ":vcs_info:*" enable git svn hg bzr
+#zstyle ":vcs_info:*" formats "(%s)-[%b]"
+#zstyle ":vcs_info:*" actionformats "(%s)-[%b|%a]"
+#zstyle ":vcs_info:(svn|bzr):*" branchformat "%b:r%r"
+#zstyle ":vcs_info:bzr:*" use-simple true
+#
+#zstyle ":vcs_info:*" max-exports 6
+#
+#if is-at-least 4.3.10; then
+#	    zstyle ":vcs_info:git:*" check-for-changes true # commitしていないのをチェック
+#		     zstyle ":vcs_info:git:*" stagedstr "<S>"
+#			      zstyle ":vcs_info:git:*" unstagedstr "<U>"
+#					    zstyle ":vcs_info:git:*" formats "(%b) %c%u"
+#						     zstyle ":vcs_info:git:*" actionformats "(%s)-[%b|%a] %c%u"
+#							  fi
+#
+#							  function vcs_prompt_info() {
+#								      LANG=en_US.UTF-8 vcs_info
+#										    [[ -n "$vcs_info_msg_0_" ]] && echo -n " %{$fg[yellow]%}$vcs_info_msg_0_%f"
+#							  }
+## end VCS
+#
 autoload -Uz vcs_info
-autoload -Uz is-at-least
+setopt prompt_subst
+zstyle ':vcs_info:git:*' check-for-changes true
+zstyle ':vcs_info:git:*' stagedstr "%F{yellow}!"
+zstyle ':vcs_info:git:*' unstagedstr "%F{red}+"
+zstyle ':vcs_info:*' formats "%F{green}%c%u[%b]%f"
+zstyle ':vcs_info:*' actionformats '[%b|%a]'
+precmd () { vcs_info }
 
-# begin VCS
-zstyle ":vcs_info:*" enable git svn hg bzr
-zstyle ":vcs_info:*" formats "(%s)-[%b]"
-zstyle ":vcs_info:*" actionformats "(%s)-[%b|%a]"
-zstyle ":vcs_info:(svn|bzr):*" branchformat "%b:r%r"
-zstyle ":vcs_info:bzr:*" use-simple true
-
-zstyle ":vcs_info:*" max-exports 6
-
-if is-at-least 4.3.10; then
-	    zstyle ":vcs_info:git:*" check-for-changes true # commitしていないのをチェック
-		     zstyle ":vcs_info:git:*" stagedstr "<S>"
-			      zstyle ":vcs_info:git:*" unstagedstr "<U>"
-					    zstyle ":vcs_info:git:*" formats "(%b) %c%u"
-						     zstyle ":vcs_info:git:*" actionformats "(%s)-[%b|%a] %c%u"
-							  fi
-
-							  function vcs_prompt_info() {
-								      LANG=en_US.UTF-8 vcs_info
-										    [[ -n "$vcs_info_msg_0_" ]] && echo -n " %{$fg[yellow]%}$vcs_info_msg_0_%f"
-							  }
-# end VCS
-
-OK=$'%{\e[38;5;17m%}>%{\e[m%}%{\e[38;5;67m%}>%{\e[m%}' 
-OK+=$'%{\e[38;5;17m%}>%{\e[m%}%{\e[38;5;67m%}> %{\e[m%}' 
+OK=$'%{\e[38;5;17m%}>%{\e[m%}%{\e[38;5;67m%}>%{\e[m%}'
+OK+=$'%{\e[38;5;17m%}>%{\e[m%}%{\e[38;5;67m%}> %{\e[m%}'
 #OK="$(tput setaf 243)-------------->>"
 #NG="$(tput setaf 131)error $(tput setaf 243)-------->>"
-NG=$'%{\e[38;5;111m%}error %{\e[m%}%{\e[38;5;67m%}> %{\e[m%}' 
+NG=$'%{\e[38;5;111m%}error %{\e[m%}%{\e[38;5;67m%}> %{\e[m%}'
 
 PROMPT=""
 PROMPT+="$(tput bold)$(tput setaf 17)%m"
 PROMPT+="$(tput setaf 111) * "
-PROMPT+="$(tput setaf 103)%~%f"
+PROMPT+="$(tput setaf 103)%~%f ${vcs_info_msg_0_}"
 #PROMPT+="\$(vcs_prompt_info)"
 #PROMPT+=""$'\n'
 PROMPT+="
@@ -189,9 +199,12 @@ alias tree="tree -NC" # N: 文字化け対策, C:色をつける
 alias sz="source ~/.zshrc"
 alias zr="vim ~/.zshrc"
 alias br="vim ~/.bashrc"
-# vim 
-alias vim="/usr/local/bin/vim"
+# vim
+alias oldvim="/usr/local/bin/vim"
+alias vim="nvim"
 alias vr="vim ~/.vimrc"
+alias dp="vim ~/.config/nvim/dein-plugins.toml"
+
 #tmux
 alias killtm='killall tmux'
 alias tm='tmux'
@@ -282,7 +295,7 @@ alias sshk="ssh -l keiji 192.168.11.2"
 alias ssh13="ssh -l kimurakeiji 172.16.25.44"
 alias num="open -a /Applications/iWork\ \'09/Numbers.app/"
 alias aic="~/Dropbox/c/AIC/bin/main"
-alias aic2="~/Desktop/c/AIC2/bin/main"
+alias aic2="~/Dropbox/c/AIC2/bin/main"
 alias cplex="~/Applications/IBM/ILOG/CPLEX_Studio1262/cplex/bin/x86-64_osx/cplex"
 
 # -------------------------------------
@@ -319,3 +332,14 @@ function title {
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
+
+#sh
+alias rep="~/sh/replace.sh"
+
+#git
+alias gb="git branch"
+alias gs="git status"
+alias gc="git checkout"
+
+#fplll
+alias fplll="~/project/fplll-master/fplll/fplll"
